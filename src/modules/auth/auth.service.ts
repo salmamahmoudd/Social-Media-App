@@ -10,12 +10,14 @@ import { OAuth2Client } from "google-auth-library";
 import { GOOGLE_CLIENT_ID } from "../../config/config.service.js";
 import { ProviderEnum } from "../../common/enums/user.enums.js";
 import type { IHUser } from "../../DB/Models/User.Model.js";
+import notificationService from "../../common/Notifiction/notifiction.service.js";
 
 class AuthService {
     private _userRepo = userRepo
     private _tokenService = tokenService;
     private _mailService = mailService
     private _redisService = redisService
+    private _notificationService = notificationService
     constructor() {}
 public async signup(bodyData: SignupDto) {
       const { email } = bodyData
@@ -49,6 +51,17 @@ public async login(body: LoginDto) {
   })
   if(!isPasswordValid){
     throw new NotFoundException("Invalid Info")
+  }
+  if(body.FCM){
+    await this._redisService.addFCMTokenToSet(user._id, body.FCM)
+    const tokens = await this._redisService.getMemberFCMTokens(user._id)
+    await this._notificationService.sendNotifications({
+      tokens,
+      data: {
+        title: "Login Notification",
+        body: `You have successfully logged in to your account ${new Date()}`
+      }
+    })
   }
   return this._tokenService.generateAccessAndRefreshTokens(user)
 }

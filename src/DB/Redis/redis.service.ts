@@ -93,6 +93,19 @@ getOTPBlockedKey({
  async  exists(key  : string) {
   return await client.exists(key);
 }
+
+ getFCMKey(userId: Types.ObjectId | string) {
+  return `FCM::${userId}`;
 }
+ 
+ async addFCMTokenToSet(userId: Types.ObjectId | string, fcmToken: string) {
+  return await client.sAdd(this.getFCMKey(userId), fcmToken);
+}
+
+  async getMemberFCMTokens(userId: Types.ObjectId | string) {
+  return await client.sMembers(this.getFCMKey(userId));
+}
+}
+
 
 export default new RedisService();

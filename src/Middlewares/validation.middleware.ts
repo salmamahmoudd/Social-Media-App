@@ -2,14 +2,24 @@ import type { NextFunction, Request, Response } from "express";
 import { BadRequestException } from "../common/exceptions/domin.exception.js";
 import { string, z, type ZodType } from "zod";
 import { GenderEnum } from "../common/enums/user.enums.js";
+
 type KeyReqType = keyof Request;
-export function validateSignup(validationSchema: Partial<Record<KeyReqType, ZodType>>) {
+
+export function validateSignup(
+   validationSchema: Partial<Record<KeyReqType, ZodType>>,
+   filesInBody = false,
+   ){
 return(req:Request, res:Response, next:NextFunction)=>{
     const validationErrs : {path:PropertyKey[]; message: string} [] = [];
     for (const key of Object.keys(validationSchema) as KeyReqType[]){
     if (validationSchema[key] == undefined) {
         continue;
     };
+
+    if(key == "body" && filesInBody == true){
+        req.body.files = req.files;
+    }
+
     const validationResult = validationSchema[key].safeParse(req[key]);
     if (!validationResult.success) {
         validationErrs.push(

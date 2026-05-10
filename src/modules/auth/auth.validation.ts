@@ -6,6 +6,7 @@ export const loginSchema = {
         .strictObject({
             email: commonValidationFields.email,
             password: commonValidationFields.password,
+            FCM:z.string().optional(),
         })
 };
 
@@ -14,7 +15,6 @@ export const signupSchema = {
         .extend({
             userName: commonValidationFields.userName,
             confirmPassword: z.string(),
-            email: commonValidationFields.email,
             age: commonValidationFields.age.optional(),
             gender: commonValidationFields.gender.optional(),
             phone: commonValidationFields.phone.optional(),
